@@ -29,6 +29,7 @@ class DataPublisherFlow {
   const std::string kGeneralTopicPrefix = kRosNamespace + "/";
   const std::string kTopicPoseMission = kGeneralTopicPrefix + "T_M_I";
   const std::string kTopicPoseGlobal = kGeneralTopicPrefix + "T_G_I";
+  const std::string kTopicPoseGlobalLocs = kGeneralTopicPrefix + "T_G_I_localizations";
   const std::string kTopicBaseframe = kGeneralTopicPrefix + "T_G_M";
   const std::string kTopicVelocity = kGeneralTopicPrefix + "velocity_I";
   const std::string kTopicBiasAcc = kGeneralTopicPrefix + "bias_acc";
@@ -48,11 +49,13 @@ class DataPublisherFlow {
       const vio::ViNodeState& vinode, const bool has_T_G_M,
       const aslam::Transformation& T_G_M);
   void localizationCallback(const Eigen::Vector3d& p_G_I_lc_pnp);
+  void localizationCallback6D(int64_t timestamp_ns, const aslam::Transformation& T_G_I);
 
   std::unique_ptr<visualization::ViwlsGraphRvizPlotter> plotter_;
   ros::NodeHandle node_handle_;
   ros::Publisher pub_pose_T_M_I_;
   ros::Publisher pub_pose_T_G_I_;
+  ros::Publisher pub_pose_T_G_I_localizations_;
   ros::Publisher pub_baseframe_T_G_M_;
   ros::Publisher pub_velocity_I_;
   ros::Publisher pub_imu_acc_bias_;

@@ -43,6 +43,8 @@ void DataPublisherFlow::registerPublishers() {
       node_handle_.advertise<geometry_msgs::PoseStamped>(kTopicPoseMission, 1);
   pub_pose_T_G_I_ =
       node_handle_.advertise<geometry_msgs::PoseStamped>(kTopicPoseGlobal, 1);
+  pub_pose_T_G_I_localizations_ =
+      node_handle_.advertise<geometry_msgs::PoseStamped>(kTopicPoseGlobalLocs, 1);
   pub_baseframe_T_G_M_ =
       node_handle_.advertise<geometry_msgs::PoseStamped>(kTopicBaseframe, 1);
   pub_velocity_I_ =
@@ -76,6 +78,7 @@ void DataPublisherFlow::attachToMessageFlow(message_flow::MessageFlow* flow) {
       [&](const vio::LocalizationResult::ConstPtr& localization) {
         CHECK(localization != nullptr);
         localizationCallback(localization->T_G_I_lc_pnp.getPosition());
+        localizationCallback6D(localization->timestamp, localization->T_G_I_lc_pnp);
       });
 
   flow->registerSubscriber<message_flow_topics::ROVIO_ESTIMATES>(
@@ -268,6 +271,19 @@ void DataPublisherFlow::localizationCallback(
   visualization::publishSpheres(
       T_G_I_loc_spheres_, kMarkerId, visualization::kDefaultMapFrame, "debug",
       "debug_T_G_I_raw_localizations");
+}
+
+
+
+void DataPublisherFlow::localizationCallback6D(
+    int64_t timestamp_ns, const aslam::Transformation& T_G_I) {
+
+    ros::Time timestamp_ros = createRosTimestamp(timestamp_ns);
+    geometry_msgs::PoseStamped T_G_I_message;
+    tf::poseStampedKindrToMsg(
+        T_G_I, timestamp_ros, visualization::kDefaultMapFrame, &T_G_I_message);
+    pub_pose_T_G_I_localizations_.publish(T_G_I_message);
+
 }
 
 }  //  namespace rovioli
